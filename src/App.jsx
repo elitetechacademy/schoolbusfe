@@ -1,35 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { Layout, theme } from 'antd';
+import { MenuItems } from './components/common/MenuItems';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from './pages/Home';
+import Contact from './pages/Contact';
+import Login from './pages/Login';
+import Logout from './pages/Logout';
+import Brand from './pages/Brand';
+import Model from './pages/Model';
+import Header from './components/common/Header';
+const { Content, Footer, Sider } = Layout;
 
-function App() {
-  const [count, setCount] = useState(0)
 
+const App = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
-
-export default App
+    <BrowserRouter>
+      <Layout
+        style={{
+          minHeight: '100vh',
+        }}
+      >
+        <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+          <div className="demo-logo-vertical" />
+          <MenuItems />
+        </Sider>
+        <Layout>
+          <Content style={{ margin: '0 5px' }} >
+            <div
+              style={{
+                padding: 15,
+                minHeight: 360,
+                background: colorBgContainer,
+                borderRadius: borderRadiusLG,
+              }}
+            >
+              <Header />
+              <Routes>
+                <Route index element={<Home />} />
+                <Route path="/vehicle/*">
+                  <Route index path="brand" element={<Brand />} />
+                  <Route path="model" element={<Model />} />
+                </Route>
+                <Route path="contact" element={<Contact />} />
+                <Route path="login" element={<Login />} />
+                <Route path="logout" element={<Logout />} />
+              </Routes>
+            </div>
+          </Content>
+          <Footer
+            style={{
+              textAlign: 'center',
+            }}
+          >
+            Elitetechacademy ©{new Date().getFullYear()} Created by Elitetech
+          </Footer>
+        </Layout>
+      </Layout>
+    </BrowserRouter>
+  );
+};
+export default App;
