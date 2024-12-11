@@ -3,8 +3,11 @@ import { create } from 'zustand';
 const loginStore = create(
     (set) => ({
     loginStatus: {
-        isLogged: true,
-        role: '',
+        isLogged: false,
+        user: {
+            userId : 0,
+            token : ''
+        }
     },
     setLoginStatus: (newStatus) =>
         set((state) => ({
