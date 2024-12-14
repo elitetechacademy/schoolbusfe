@@ -1,8 +1,110 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { Table, Button, Space, Row, Modal } from 'antd'
+import BrandService from '../services/BrandService';
+import ModalMode from '../utils/types/ModalMode';
+import Edit from '../components/brand/Edit';
+import { toast } from 'react-toastify';
 
 const Brand = () => {
+
+  //states
+  const [brands, setBrands] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState(ModalMode.INSERT);
+  const [formData, setFormData] = useState(null);
+
+  //hooks
+  useEffect(() => {
+    handleGetBrands().then(() => { }).catch(() => { });
+  }, []);
+
+  const {confirm} = Modal
+
+
+  //functions
+  const handleGetBrands = async () => {
+    const result = await BrandService.GetAllAsync();
+    if (result.isSuccess) {
+
+      setBrands(
+        result.data.map(brand => {
+          return {
+            key:brand.brandId,
+            brandId: brand.brandId,
+            brandName: brand.brandName
+          }
+        }));
+    }
+  }
+
+  const handleEditClick=(id)=>{
+    let currentBrand = brands.find(brand => brand.brandId == id);
+    setFormData(currentBrand);
+    setModalMode(ModalMode.EDIT);
+    setModalOpen(true);    
+  }
+
+  const handleCreateClick = ()=>{
+    setFormData({brandName:null});
+    setModalMode(ModalMode.INSERT);
+    setModalOpen(true);    
+  }
+
+  const handleSaveClick = async (values)=>{
+    let result;
+    if(modalMode == ModalMode.INSERT)
+      result = await BrandService.CreateAsync(values);
+    else
+      result = await BrandService.UpdateAsync(values);
+
+      toast(result.message, {type: result.isSuccess ? "success" : "error"});
+      setModalOpen(false);
+      await handleGetBrands();
+  }
+
+  const handleDeleteClick = (id)=>{
+    confirm({
+      title:"Uyarı",
+      content:"Kayıt silinecek. Devam etmek ister misiniz?",
+      onOk:async ()=>{
+        const result = await BrandService.DeleteAsync(id);
+        if(result.isSuccess){
+          await handleGetBrands();
+        }
+        toast(result.message, {type: result.isSuccess ? "success" : "error"});
+      }
+    });
+  }
+
+  const columns = [
+    {
+      title: 'Marka Adı',
+      dataIndex: 'brandName',
+      key: 'name'
+    },
+    {
+      key: 'action',
+      render: (_, record) => (
+        <Space size="middle">
+          <Button type="primary" onClick={() => { handleEditClick(record.brandId) }}>Güncelle</Button>
+          <Button type="primary" onClick={() => { handleDeleteClick(record.brandId) }}>Sil</Button>
+        </Space>
+      ),
+    },
+  ];
+
+
   return (
-    <div>Brand</div>
+    <>
+      <Row justify="end">
+        <Button type="primary" style={{ marginBottom: "15px" }} onClick={()=>{handleCreateClick()}}>Yeni Kayıt</Button>
+      </Row>
+      <Table columns={columns} dataSource={brands} />
+      <Modal title={modalMode == ModalMode.EDIT ? "Model Düzenle" : "Model Ekle"} open={modalOpen} footer={null} onCancel={()=>{setModalOpen(false)}}>
+        <Edit initialFormData={formData} handleSaveClick={handleSaveClick}/>
+      </Modal>
+    </>
+
   )
 }
 

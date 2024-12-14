@@ -33,19 +33,16 @@ ApiClient.interceptors.response.use(
           let toastType = (error.response.data.validationErrors && error.response.data.validationErrors.length > 0) ? "warning" : "error";
           let messageBody = toastType == "warning" ? error.response.data.validationErrors[0] : error.response.data.message;
           toast(messageBody, {
-            type: toastType,
-            onClose: () => {
-              if (location.href.indexOf('login') < 0)
-                location.href = 'login'
-            }
+            type: toastType
           });
           Promise.resolve(error.response);
           return error.response.data;
-        case 401, 403:
+        case 401:
+        case 403:
           toast.error('Bu içeriği görme yetkiniz bulunmamaktadır.', {
             onClose: () => {
               if (location.href.indexOf('login') < 0)
-                location.href = 'login'
+                location.href = '/login'
             }
           });
           break;
