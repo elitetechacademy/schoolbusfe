@@ -6,6 +6,7 @@ const loginStore = create(
         isLogged: false,
         user: {
             userId : 0,
+            roleId : 0,
             token : ''
         }
     },

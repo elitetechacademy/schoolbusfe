@@ -4,6 +4,9 @@ import BrandService from '../services/BrandService';
 import ModalMode from '../utils/types/ModalMode';
 import Edit from '../components/brand/Edit';
 import { toast } from 'react-toastify';
+import EditButtonGroup from '../components/common/EditButtonGroup';
+import CreateButtonGroup from '../components/common/CreateButtonGroup';
+import StringUtils from '../utils/pack/StringUtils';
 
 const Brand = () => {
 
@@ -18,7 +21,7 @@ const Brand = () => {
     handleGetBrands().then(() => { }).catch(() => { });
   }, []);
 
-  const {confirm} = Modal
+  const { confirm } = Modal
 
 
   //functions
@@ -29,7 +32,7 @@ const Brand = () => {
       setBrands(
         result.data.map(brand => {
           return {
-            key:brand.brandId,
+            key: brand.brandId,
             brandId: brand.brandId,
             brandName: brand.brandName
           }
@@ -37,41 +40,41 @@ const Brand = () => {
     }
   }
 
-  const handleEditClick=(id)=>{
+  const handleEditClick = (id) => {
     let currentBrand = brands.find(brand => brand.brandId == id);
     setFormData(currentBrand);
     setModalMode(ModalMode.EDIT);
-    setModalOpen(true);    
+    setModalOpen(true);
   }
 
-  const handleCreateClick = ()=>{
-    setFormData({brandName:null});
+  const handleCreateClick = () => {
+    setFormData({ brandName: null });
     setModalMode(ModalMode.INSERT);
-    setModalOpen(true);    
+    setModalOpen(true);
   }
 
-  const handleSaveClick = async (values)=>{
+  const handleSaveClick = async (values) => {
     let result;
-    if(modalMode == ModalMode.INSERT)
+    if (modalMode == ModalMode.INSERT)
       result = await BrandService.CreateAsync(values);
     else
       result = await BrandService.UpdateAsync(values);
 
-      toast(result.message, {type: result.isSuccess ? "success" : "error"});
-      setModalOpen(false);
-      await handleGetBrands();
+    toast(result.message, { type: result.isSuccess ? "success" : "error" });
+    setModalOpen(false);
+    await handleGetBrands();
   }
 
-  const handleDeleteClick = (id)=>{
+  const handleDeleteClick = (id) => {
     confirm({
-      title:"Uyarı",
-      content:"Kayıt silinecek. Devam etmek ister misiniz?",
-      onOk:async ()=>{
+      title: "Uyarı",
+      content: "Kayıt silinecek. Devam etmek ister misiniz?",
+      onOk: async () => {
         const result = await BrandService.DeleteAsync(id);
-        if(result.isSuccess){
+        if (result.isSuccess) {
           await handleGetBrands();
         }
-        toast(result.message, {type: result.isSuccess ? "success" : "error"});
+        toast(result.message, { type: result.isSuccess ? "success" : "error" });
       }
     });
   }
@@ -80,15 +83,29 @@ const Brand = () => {
     {
       title: 'Marka Adı',
       dataIndex: 'brandName',
-      key: 'name'
+      key: 'name',
+      filters: brands.map(brand =>{
+        return {
+          text:brand.brandName,
+          value:brand.brandName
+        }
+      }),
+      onFilter: (value, record) => record.brandName.includes(value),
+      sorter: (a, b, sortOrder) => {
+        if (sortOrder === 'ascend') {
+          return a.brandName.localeCompare(b.brandName);
+        } else if (sortOrder === 'descend') {
+          return a.brandName.localeCompare(b.brandName);
+        }
+        return 0;
+      },
     },
     {
       key: 'action',
       render: (_, record) => (
-        <Space size="middle">
-          <Button type="primary" onClick={() => { handleEditClick(record.brandId) }}>Güncelle</Button>
-          <Button type="primary" onClick={() => { handleDeleteClick(record.brandId) }}>Sil</Button>
-        </Space>
+        <EditButtonGroup
+          handleEditClick={() => handleEditClick(record.brandId)}
+          handleDeleteClick={() => handleDeleteClick(record.brandId)} />
       ),
     },
   ];
@@ -96,12 +113,16 @@ const Brand = () => {
 
   return (
     <>
-      <Row justify="end">
-        <Button type="primary" style={{ marginBottom: "15px" }} onClick={()=>{handleCreateClick()}}>Yeni Kayıt</Button>
-      </Row>
+      <CreateButtonGroup
+        justify="end"
+        style={{ marginBottom: "15px" }}
+        buttonText="Yeni Marka Ekle"
+        handleCreateClick={() => handleCreateClick()} />
       <Table columns={columns} dataSource={brands} />
-      <Modal title={modalMode == ModalMode.EDIT ? "Model Düzenle" : "Model Ekle"} open={modalOpen} footer={null} onCancel={()=>{setModalOpen(false)}}>
-        <Edit initialFormData={formData} handleSaveClick={handleSaveClick}/>
+      <Modal title={modalMode == ModalMode.EDIT ? "Model Düzenle" : "Model Ekle"} open={modalOpen} footer={null} onCancel={() => { setModalOpen(false) }}>
+        <Edit
+          initialFormData={formData}
+          handleSaveClick={handleSaveClick} />
       </Modal>
     </>
 
