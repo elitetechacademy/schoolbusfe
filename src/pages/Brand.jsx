@@ -6,7 +6,6 @@ import Edit from '../components/brand/Edit';
 import { toast } from 'react-toastify';
 import EditButtonGroup from '../components/common/EditButtonGroup';
 import CreateButtonGroup from '../components/common/CreateButtonGroup';
-import StringUtils from '../utils/pack/StringUtils';
 
 const Brand = () => {
 
